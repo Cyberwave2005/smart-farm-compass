@@ -15,11 +15,11 @@ export type Field = {
 };
 
 export const FIELDS: Field[] = [
-  { id: "f1", name: "North Plot", crop: "Maize", stage: "Vegetative", area: 12.4, health: 92, moisture: 38, temp: 24, humidity: 64, ph: 6.5, status: "healthy" },
-  { id: "f2", name: "Riverside", crop: "Tomato", stage: "Flowering", area: 5.8, health: 76, moisture: 22, temp: 28, humidity: 55, ph: 6.8, status: "warning" },
-  { id: "f3", name: "South Greenhouse", crop: "Lettuce", stage: "Mature", area: 1.2, health: 88, moisture: 52, temp: 21, humidity: 72, ph: 6.2, status: "healthy" },
-  { id: "f4", name: "East Orchard", crop: "Apple", stage: "Fruiting", area: 8.0, health: 64, moisture: 18, temp: 31, humidity: 41, ph: 6.9, status: "critical" },
-  { id: "f5", name: "West Paddock", crop: "Wheat", stage: "Heading", area: 18.6, health: 81, moisture: 34, temp: 26, humidity: 58, ph: 7.0, status: "healthy" },
+  { id: "f1", name: "UZ North Research Plot", crop: "Maize", stage: "Vegetative", area: 12.4, health: 92, moisture: 38, temp: 24, humidity: 64, ph: 6.5, status: "healthy" },
+  { id: "f2", name: "Mukuvisi Irrigation Block", crop: "Tomato", stage: "Flowering", area: 5.8, health: 76, moisture: 22, temp: 28, humidity: 55, ph: 6.8, status: "warning" },
+  { id: "f3", name: "Mt Pleasant Greenhouse", crop: "Lettuce", stage: "Mature", area: 1.2, health: 88, moisture: 52, temp: 21, humidity: 72, ph: 6.2, status: "healthy" },
+  { id: "f4", name: "Avondale Citrus Orchard", crop: "Citrus", stage: "Fruiting", area: 8.0, health: 64, moisture: 18, temp: 31, humidity: 41, ph: 6.9, status: "critical" },
+  { id: "f5", name: "Ruwa Grain Block", crop: "Wheat", stage: "Heading", area: 18.6, health: 81, moisture: 34, temp: 26, humidity: 58, ph: 7.0, status: "healthy" },
 ];
 
 export type Alert = {
@@ -32,11 +32,11 @@ export type Alert = {
 };
 
 export const ALERTS: Alert[] = [
-  { id: "a1", level: "critical", title: "Soil moisture below 20% threshold", field: "East Orchard", time: "2 min ago", resolved: false },
-  { id: "a2", level: "warning", title: "Temperature trending high", field: "Riverside", time: "14 min ago", resolved: false },
-  { id: "a3", level: "warning", title: "pH drift detected", field: "South Greenhouse", time: "1 hr ago", resolved: false },
+  { id: "a1", level: "critical", title: "Soil moisture below 20% threshold", field: "Avondale Citrus Orchard", time: "2 min ago", resolved: false },
+  { id: "a2", level: "warning", title: "Temperature trending high", field: "Mukuvisi Irrigation Block", time: "14 min ago", resolved: false },
+  { id: "a3", level: "warning", title: "pH drift detected", field: "Mt Pleasant Greenhouse", time: "1 hr ago", resolved: false },
   { id: "a4", level: "info", title: "Rain forecast within 24h", field: "All fields", time: "2 hr ago", resolved: false },
-  { id: "a5", level: "critical", title: "Sensor offline > 30 min", field: "North Plot", time: "3 hr ago", resolved: true },
+  { id: "a5", level: "critical", title: "Sensor offline > 30 min", field: "UZ North Research Plot", time: "3 hr ago", resolved: true },
 ];
 
 export type Recommendation = {
@@ -51,25 +51,25 @@ export type Recommendation = {
 
 export const RECOMMENDATIONS: Recommendation[] = [
   {
-    id: "r1", type: "irrigation", field: "East Orchard", crop: "Apple",
+    id: "r1", type: "irrigation", field: "Avondale Citrus Orchard", crop: "Citrus",
     title: "Irrigate 18mm within 4 hours",
     reason: "Moisture at 18% — 6pts below stage threshold. Forecast: no rain, 31°C peak.",
     confidence: 0.94,
   },
   {
-    id: "r2", type: "fertilizer", field: "Riverside", crop: "Tomato",
+    id: "r2", type: "fertilizer", field: "Mukuvisi Irrigation Block", crop: "Tomato",
     title: "Apply potassium-rich foliar feed",
     reason: "Flowering stage + leaf yellowing pattern. Past 14d nutrient draw 22% above baseline.",
     confidence: 0.81,
   },
   {
-    id: "r3", type: "disease", field: "South Greenhouse", crop: "Lettuce",
+    id: "r3", type: "disease", field: "Mt Pleasant Greenhouse", crop: "Lettuce",
     title: "Monitor for downy mildew",
     reason: "Humidity 72% sustained 6h, temp 18-22°C — matches infection model.",
     confidence: 0.67,
   },
   {
-    id: "r4", type: "climate", field: "North Plot", crop: "Maize",
+    id: "r4", type: "climate", field: "UZ North Research Plot", crop: "Maize",
     title: "Auto-raised moisture floor to 32%",
     reason: "Heatwave forecast (3 days >30°C). Adjusted threshold for vegetative stage.",
     confidence: 0.88,
@@ -87,12 +87,12 @@ export type Device = {
 };
 
 export const DEVICES: Device[] = [
-  { id: "d1", name: "SoilProbe-N1", type: "moisture", field: "North Plot", status: "online", lastSeen: "12s ago", latencyMs: 120 },
+  { id: "d1", name: "UZ-SoilProbe-N1", type: "moisture", field: "UZ North Research Plot", status: "online", lastSeen: "12s ago", latencyMs: 120 },
   { id: "d2", name: "WeatherStation-A", type: "weather", field: "All fields", status: "online", lastSeen: "8s ago", latencyMs: 95 },
-  { id: "d3", name: "pH-Probe-R3", type: "ph", field: "Riverside", status: "degraded", lastSeen: "3m ago", latencyMs: 820 },
-  { id: "d4", name: "Valve-E1", type: "valve", field: "East Orchard", status: "online", lastSeen: "1m ago", latencyMs: 210 },
-  { id: "d5", name: "SoilProbe-W2", type: "moisture", field: "West Paddock", status: "offline", lastSeen: "32m ago", latencyMs: 0 },
-  { id: "d6", name: "Cam-South", type: "camera", field: "South Greenhouse", status: "online", lastSeen: "45s ago", latencyMs: 340 },
+  { id: "d3", name: "Mukuvisi-pH-R3", type: "ph", field: "Mukuvisi Irrigation Block", status: "degraded", lastSeen: "3m ago", latencyMs: 820 },
+  { id: "d4", name: "Avondale-Valve-E1", type: "valve", field: "Avondale Citrus Orchard", status: "online", lastSeen: "1m ago", latencyMs: 210 },
+  { id: "d5", name: "Ruwa-SoilProbe-W2", type: "moisture", field: "Ruwa Grain Block", status: "offline", lastSeen: "32m ago", latencyMs: 0 },
+  { id: "d6", name: "MtPleasant-Cam-S1", type: "camera", field: "Mt Pleasant Greenhouse", status: "online", lastSeen: "45s ago", latencyMs: 340 },
 ];
 
 export type WebhookEvent = {

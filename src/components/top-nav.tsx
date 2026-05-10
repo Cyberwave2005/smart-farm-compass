@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export function TopNav() {
-  const [farm, setFarm] = useState("Greenhill Farm");
+  const [farm, setFarm] = useState("University of Zimbabwe Agroecology Farm");
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function TopNav() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          {["Greenhill Farm", "Riverside Co-op", "Sunward Acres"].map((f) => (
+          {["University of Zimbabwe Agroecology Farm", "Mbare Musika Horticulture Co-op", "Borrowdale Market Garden"].map((f) => (
             <DropdownMenuItem key={f} onClick={() => setFarm(f)}>{f}</DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -49,7 +49,7 @@ export function TopNav() {
           <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-destructive">3</Badge>
         </Button>
         <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-semibold">AT</AvatarFallback>
+          <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-semibold">TM</AvatarFallback>
         </Avatar>
       </div>
     </header>

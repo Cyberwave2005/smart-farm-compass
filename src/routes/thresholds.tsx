@@ -131,9 +131,9 @@ function ThresholdsPage() {
             <h3 className="font-display font-semibold mb-3">Recent versions</h3>
             <div className="space-y-2 text-sm">
               {[
-                { v: "v12", date: "Today, 09:14", by: "Amara T.", current: true },
+                { v: "v12", date: "Today, 09:14", by: "Tariro M.", current: true },
                 { v: "v11", date: "Yesterday", by: "AI auto-adjust" },
-                { v: "v10", date: "3 days ago", by: "Marcus K." },
+                { v: "v10", date: "3 days ago", by: "Kudzai N." },
               ].map((r) => (
                 <div key={r.v} className="flex items-center justify-between py-2 border-b last:border-0">
                   <div>

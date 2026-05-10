@@ -31,12 +31,12 @@ function Dashboard() {
       {/* Hero banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-hero p-6 md:p-8 text-white shadow-elegant">
         <div className="relative z-10 max-w-2xl">
-          <p className="text-xs uppercase tracking-widest opacity-80 mb-2">Greenhill Farm · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
+          <p className="text-xs uppercase tracking-widest opacity-80 mb-2">University of Zimbabwe Agroecology Farm · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
           <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
-            Good morning, Amara
+            Good morning, Tariro
           </h1>
           <p className="text-sm md:text-base opacity-90 max-w-lg">
-            5 fields under watch · 1 critical alert needs attention. AI suggests irrigating East Orchard within 4 hours.
+            5 fields under watch · 1 critical alert needs attention. AI suggests irrigating Avondale Citrus Orchard within 4 hours.
           </p>
         </div>
         <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
@@ -47,7 +47,7 @@ function Dashboard() {
         <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm">
           <AlertOctagon className="h-5 w-5 text-destructive shrink-0" />
           <p className="flex-1">
-            <strong>Critical:</strong> East Orchard soil moisture at 18% — below threshold for fruiting stage.
+            <strong>Critical:</strong> Avondale Citrus Orchard soil moisture at 18% — below threshold for fruiting stage.
           </p>
           <Button size="sm" variant="outline" className="h-7">Review</Button>
           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setBannerOpen(false)}>
@@ -68,7 +68,7 @@ function Dashboard() {
 
       <div className="text-xs text-muted-foreground flex items-center gap-1.5">
         <Clock className="h-3 w-3" />
-        Last webhook received <strong className="text-foreground">8 seconds ago</strong> · sensor.moisture from SoilProbe-N1
+        Last webhook received <strong className="text-foreground">8 seconds ago</strong> · sensor.moisture from UZ-SoilProbe-N1
       </div>
 
       {/* Main grid */}
