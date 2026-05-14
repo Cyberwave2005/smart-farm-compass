@@ -4,7 +4,7 @@ import { z } from "zod";
 import { loadFarmSnapshotForUser, loadFarmSnapshotWithFallback } from "@/lib/farm-db";
 
 const snapshotInputSchema = z.object({
-  accessToken: z.string().min(10).optional(),
+  accessToken: z.string().optional(),
 });
 
 export const getFarmSnapshot = createServerFn({ method: "POST" })
