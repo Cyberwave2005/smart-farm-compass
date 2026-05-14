@@ -17,23 +17,23 @@ import { Badge } from "@/components/ui/badge";
 export function TopNav() {
   const { user, signOut } = useAuth();
   const { farms, alerts } = useFarmData();
-  const [farmLabel, setFarmLabel] = useState<string>("");
+  const [selectedFarmId, setSelectedFarmId] = useState<string | "all">("all");
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
+  const farmLabel =
+    selectedFarmId === "all"
+      ? "All farms"
+      : farms.find((f) => f.id === selectedFarmId)?.name ?? "All farms";
+
   useEffect(() => {
-    if (!farms.length) {
-      setFarmLabel("All farms");
-      return;
+    if (selectedFarmId !== "all" && !farms.some((f) => f.id === selectedFarmId)) {
+      setSelectedFarmId("all");
     }
-    setFarmLabel((prev) => {
-      if (prev && farms.some((f) => f.name === prev)) return prev;
-      return farms[0]?.name ?? "All farms";
-    });
-  }, [farms]);
+  }, [farms, selectedFarmId]);
 
   const openAlerts = alerts.filter((a) => !a.resolved).length;
 
@@ -50,9 +50,9 @@ export function TopNav() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="max-w-[280px]">
-          <DropdownMenuItem onClick={() => setFarmLabel("All farms")}>All farms</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setSelectedFarmId("all")}>All farms</DropdownMenuItem>
           {farms.map((f) => (
-            <DropdownMenuItem key={f.id} onClick={() => setFarmLabel(f.name)}>
+            <DropdownMenuItem key={f.id} onClick={() => setSelectedFarmId(f.id)}>
               {f.name}
             </DropdownMenuItem>
           ))}
