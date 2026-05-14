@@ -3,21 +3,39 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MurimiAiToolbarButton } from "@/components/murimi-ai-sheet";
 import { useAuth } from "@/context/auth-context";
+import { useFarmData } from "@/context/farm-data-context";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export function TopNav() {
   const { user, signOut } = useAuth();
-  const [farm, setFarm] = useState("University of Zimbabwe Agroecology Farm");
+  const { farms, alerts } = useFarmData();
+  const [farmLabel, setFarmLabel] = useState<string>("");
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
+
+  useEffect(() => {
+    if (!farms.length) {
+      setFarmLabel("All farms");
+      return;
+    }
+    setFarmLabel((prev) => {
+      if (prev && farms.some((f) => f.name === prev)) return prev;
+      return farms[0]?.name ?? "All farms";
+    });
+  }, [farms]);
+
+  const openAlerts = alerts.filter((a) => !a.resolved).length;
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-md">
@@ -25,16 +43,22 @@ export function TopNav() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            {farm}
-            <ChevronDown className="h-4 w-4 opacity-60" />
+          <Button variant="outline" size="sm" className="gap-2 max-w-[220px] sm:max-w-xs">
+            <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+            <span className="truncate">{farmLabel}</span>
+            <ChevronDown className="h-4 w-4 opacity-60 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          {["University of Zimbabwe Agroecology Farm", "Mbare Musika Horticulture Co-op", "Borrowdale Market Garden"].map((f) => (
-            <DropdownMenuItem key={f} onClick={() => setFarm(f)}>{f}</DropdownMenuItem>
+        <DropdownMenuContent align="start" className="max-w-[280px]">
+          <DropdownMenuItem onClick={() => setFarmLabel("All farms")}>All farms</DropdownMenuItem>
+          {farms.map((f) => (
+            <DropdownMenuItem key={f.id} onClick={() => setFarmLabel(f.name)}>
+              {f.name}
+            </DropdownMenuItem>
           ))}
+          {!farms.length && (
+            <div className="px-2 py-2 text-xs text-muted-foreground">Add farms in onboarding to list them here.</div>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -52,7 +76,11 @@ export function TopNav() {
         </Button>
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-4 w-4" />
-          <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-destructive">3</Badge>
+          {openAlerts > 0 && (
+            <Badge className="absolute -top-1 -right-1 h-4 min-w-4 p-0 flex items-center justify-center text-[10px] bg-destructive px-0.5">
+              {openAlerts > 9 ? "9+" : openAlerts}
+            </Badge>
+          )}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

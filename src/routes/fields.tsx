@@ -16,7 +16,13 @@ function FieldsPage() {
         <p className="text-muted-foreground">All monitored fields across your farms</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {fields.map((f) => <FieldCard key={f.id} field={f} />)}
+        {fields.length === 0 ? (
+          <p className="text-sm text-muted-foreground col-span-full rounded-xl border border-dashed p-8 text-center">
+            No plots yet. Complete onboarding to create your first farm and starter plot.
+          </p>
+        ) : (
+          fields.map((f) => <FieldCard key={f.id} field={f} />)
+        )}
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ export type UserActuator = {
   field_or_location: string | null;
   notes: string | null;
   sort_order: number;
+  farm_id: string | null;
 };
 
 type AuthContextValue = {

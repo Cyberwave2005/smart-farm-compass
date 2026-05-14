@@ -2,16 +2,20 @@ import { useMemo, createContext, useContext, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
+import { useAuth } from "@/context/auth-context";
 import { getFarmSnapshot } from "@/lib/farm-data-fns";
 import type { FarmSnapshot } from "@/lib/farm-data";
-import { getStaticFarmSnapshot } from "@/lib/farm-data";
+import { EMPTY_FARM_SNAPSHOT } from "@/lib/farm-data";
 
 type FarmDataContextValue = {
   snapshot: FarmSnapshot;
   isLoading: boolean;
   isError: boolean;
   refetch: () => void;
+  farms: FarmSnapshot["farms"];
   fields: FarmSnapshot["fields"];
+  nodes: FarmSnapshot["nodes"];
+  actuators: FarmSnapshot["actuators"];
   alerts: FarmSnapshot["alerts"];
   recommendations: FarmSnapshot["recommendations"];
   devices: FarmSnapshot["devices"];
@@ -20,32 +24,36 @@ type FarmDataContextValue = {
 
 const FarmDataContext = createContext<FarmDataContextValue | null>(null);
 
-const staticSnapshot = getStaticFarmSnapshot();
-
 export function FarmDataProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
+  const token = session?.access_token;
   const load = useServerFn(getFarmSnapshot);
   const q = useQuery({
-    queryKey: ["farm-snapshot"],
-    queryFn: () => load() as Promise<FarmSnapshot>,
+    queryKey: ["farm-snapshot", token ?? "none"],
+    queryFn: () => load({ data: { accessToken: token } }) as Promise<FarmSnapshot>,
+    enabled: Boolean(token),
     staleTime: 60 * 1000,
-    placeholderData: staticSnapshot,
+    placeholderData: EMPTY_FARM_SNAPSHOT,
   });
 
-  const snapshot = q.data ?? staticSnapshot;
+  const snapshot = q.data ?? EMPTY_FARM_SNAPSHOT;
 
   const value = useMemo<FarmDataContextValue>(
     () => ({
       snapshot,
-      isLoading: q.isFetching && q.dataUpdatedAt === 0,
+      isLoading: Boolean(token) && q.isFetching && q.dataUpdatedAt === 0,
       isError: q.isError,
       refetch: () => void q.refetch(),
+      farms: snapshot.farms,
       fields: snapshot.fields,
+      nodes: snapshot.nodes,
+      actuators: snapshot.actuators,
       alerts: snapshot.alerts,
       recommendations: snapshot.recommendations,
       devices: snapshot.devices,
       webhookEvents: snapshot.webhookEvents,
     }),
-    [snapshot, q.isLoading, q.data, q.isError, q.refetch],
+    [snapshot, token, q.isFetching, q.dataUpdatedAt, q.isError, q.refetch],
   );
 
   return <FarmDataContext.Provider value={value}>{children}</FarmDataContext.Provider>;

@@ -35,41 +35,46 @@ export function AlertsList({ limit }: { limit?: number }) {
         </Badge>
       </div>
 
-      <div className="space-y-2">
-        {visible.map((a) => {
-          const c = cfg[a.level];
-          const Icon = c.Icon;
-          return (
-            <div
-              key={a.id}
-              className={cn(
-                "flex items-start gap-3 rounded-lg border-l-4 bg-muted/30 p-3 transition-opacity",
-                c.border,
-                a.resolved && "opacity-50"
-              )}
-            >
-              <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md", c.bg)}>
-                <Icon className={cn("h-4 w-4", c.color)} />
+      {visible.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-6 text-center">No alerts. Your workspace feed is clear.</p>
+      ) : (
+        <div className="space-y-2">
+          {visible.map((a) => {
+            const c = cfg[a.level];
+            const Icon = c.Icon;
+            return (
+              <div
+                key={a.id}
+                className={cn(
+                  "flex items-start gap-3 rounded-lg border-l-4 bg-muted/30 p-3 transition-opacity",
+                  c.border,
+                  a.resolved && "opacity-50",
+                )}
+              >
+                <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md", c.bg)}>
+                  <Icon className={cn("h-4 w-4", c.color)} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-tight">{a.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {a.field} · {a.time}
+                  </p>
+                </div>
+                {!a.resolved && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs"
+                    onClick={() => setResolvedLocal((p) => ({ ...p, [a.id]: true }))}
+                  >
+                    <Check className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-tight">{a.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {a.field} · {a.time}
-                </p>
-              </div>
-              {!a.resolved && (
-                <Button
-                  size="sm" variant="ghost"
-                  className="h-7 text-xs"
-                  onClick={() => setResolvedLocal((p) => ({ ...p, [a.id]: true }))}
-                >
-                  <Check className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }

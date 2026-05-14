@@ -22,3 +22,16 @@ export function createSupabaseServerClient(): SupabaseClient | null {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
+
+/** Same anon client, but RLS runs as the signed-in user (pass the browser session JWT). */
+export function createSupabaseServerClientWithUserJwt(accessToken: string): SupabaseClient | null {
+  const url = getEnv("SUPABASE_URL");
+  const anonKey = getEnv("SUPABASE_ANON_KEY");
+  if (!url || !anonKey || !accessToken?.trim()) return null;
+  return createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: { Authorization: `Bearer ${accessToken.trim()}` },
+    },
+  });
+}

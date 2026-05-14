@@ -1,8 +1,11 @@
-// Farm domain types + static fallback data (used when Supabase is not configured or query fails).
-// Live dashboard data is loaded via `getFarmSnapshot` server fn → Supabase when `SUPABASE_URL` + `SUPABASE_ANON_KEY` are set.
+// Farm domain types. Authenticated dashboards load a **user workspace** snapshot (farms, plots, nodes, actuators)
+// via `getFarmSnapshot` with a Supabase JWT — empty arrays when you have not added data yet.
+// Static fallback blocks remain for local tooling / demos only (not used in the protected app shell).
 
 export type Field = {
   id: string;
+  farmId?: string;
+  farmName?: string;
   name: string;
   crop: string;
   stage: string;
@@ -13,6 +16,33 @@ export type Field = {
   humidity: number;
   ph: number;
   status: "healthy" | "warning" | "critical";
+};
+
+export type FarmSummary = {
+  id: string;
+  name: string;
+  weather_lat: number | null;
+  weather_lon: number | null;
+  weather_label: string | null;
+};
+
+export type FarmNode = {
+  id: string;
+  farmId: string;
+  farmName: string;
+  name: string;
+  role: "gateway" | "sensor_hub" | "controller" | "edge" | "other";
+  connectivityNotes: string | null;
+};
+
+export type WorkspaceActuator = {
+  id: string;
+  name: string;
+  actuator_type: "valve" | "pump" | "fan" | "gate" | "irrigation" | "other";
+  field_or_location: string | null;
+  notes: string | null;
+  farm_id: string | null;
+  farm_name: string | null;
 };
 
 export type Alert = {
@@ -52,15 +82,30 @@ export type WebhookEvent = {
   latency: number;
 };
 
-export type FarmSnapshotSource = "supabase" | "fallback";
+export type FarmSnapshotSource = "supabase" | "workspace" | "fallback";
 
 export type FarmSnapshot = {
   source: FarmSnapshotSource;
+  farms: FarmSummary[];
+  nodes: FarmNode[];
+  actuators: WorkspaceActuator[];
   fields: Field[];
   alerts: Alert[];
   recommendations: Recommendation[];
   devices: Device[];
   webhookEvents: WebhookEvent[];
+};
+
+export const EMPTY_FARM_SNAPSHOT: FarmSnapshot = {
+  source: "workspace",
+  farms: [],
+  nodes: [],
+  actuators: [],
+  fields: [],
+  alerts: [],
+  recommendations: [],
+  devices: [],
+  webhookEvents: [],
 };
 
 export const FALLBACK_FIELDS: Field[] = [
@@ -146,6 +191,9 @@ export const FALLBACK_WEBHOOK_EVENTS: WebhookEvent[] = [
 export function getStaticFarmSnapshot(): FarmSnapshot {
   return {
     source: "fallback",
+    farms: [],
+    nodes: [],
+    actuators: [],
     fields: FALLBACK_FIELDS,
     alerts: FALLBACK_ALERTS,
     recommendations: FALLBACK_RECOMMENDATIONS,
