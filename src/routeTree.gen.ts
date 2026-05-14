@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThresholdsRouteImport } from './routes/thresholds'
 import { Route as SensorsRouteImport } from './routes/sensors'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as FieldsRouteImport } from './routes/fields'
 import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as ApiIntegrationsIngestRouteImport } from './routes/api/integrations/ingest'
 
 const ThresholdsRoute = ThresholdsRouteImport.update({
@@ -27,6 +30,11 @@ const ThresholdsRoute = ThresholdsRouteImport.update({
 const SensorsRoute = SensorsRouteImport.update({
   id: '/sensors',
   path: '/sensors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntegrationsRoute = IntegrationsRouteImport.update({
@@ -59,6 +67,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
+  id: '/auth/sign-up',
+  path: '/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/auth/sign-in',
+  path: '/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiIntegrationsIngestRoute = ApiIntegrationsIngestRouteImport.update({
   id: '/api/integrations/ingest',
   path: '/api/integrations/ingest',
@@ -72,8 +90,11 @@ export interface FileRoutesByFullPath {
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
   '/integrations': typeof IntegrationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
   '/thresholds': typeof ThresholdsRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
   '/api/integrations/ingest': typeof ApiIntegrationsIngestRoute
 }
 export interface FileRoutesByTo {
@@ -83,8 +104,11 @@ export interface FileRoutesByTo {
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
   '/integrations': typeof IntegrationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
   '/thresholds': typeof ThresholdsRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
   '/api/integrations/ingest': typeof ApiIntegrationsIngestRoute
 }
 export interface FileRoutesById {
@@ -95,8 +119,11 @@ export interface FileRoutesById {
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
   '/integrations': typeof IntegrationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
   '/thresholds': typeof ThresholdsRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
   '/api/integrations/ingest': typeof ApiIntegrationsIngestRoute
 }
 export interface FileRouteTypes {
@@ -108,8 +135,11 @@ export interface FileRouteTypes {
     | '/devices'
     | '/fields'
     | '/integrations'
+    | '/onboarding'
     | '/sensors'
     | '/thresholds'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
     | '/api/integrations/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,8 +149,11 @@ export interface FileRouteTypes {
     | '/devices'
     | '/fields'
     | '/integrations'
+    | '/onboarding'
     | '/sensors'
     | '/thresholds'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
     | '/api/integrations/ingest'
   id:
     | '__root__'
@@ -130,8 +163,11 @@ export interface FileRouteTypes {
     | '/devices'
     | '/fields'
     | '/integrations'
+    | '/onboarding'
     | '/sensors'
     | '/thresholds'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
     | '/api/integrations/ingest'
   fileRoutesById: FileRoutesById
 }
@@ -142,8 +178,11 @@ export interface RootRouteChildren {
   DevicesRoute: typeof DevicesRoute
   FieldsRoute: typeof FieldsRoute
   IntegrationsRoute: typeof IntegrationsRoute
+  OnboardingRoute: typeof OnboardingRoute
   SensorsRoute: typeof SensorsRoute
   ThresholdsRoute: typeof ThresholdsRoute
+  AuthSignInRoute: typeof AuthSignInRoute
+  AuthSignUpRoute: typeof AuthSignUpRoute
   ApiIntegrationsIngestRoute: typeof ApiIntegrationsIngestRoute
 }
 
@@ -161,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/sensors'
       fullPath: '/sensors'
       preLoaderRoute: typeof SensorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/integrations': {
@@ -205,6 +251,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/sign-up': {
+      id: '/auth/sign-up'
+      path: '/auth/sign-up'
+      fullPath: '/auth/sign-up'
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/auth/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/integrations/ingest': {
       id: '/api/integrations/ingest'
       path: '/api/integrations/ingest'
@@ -222,8 +282,11 @@ const rootRouteChildren: RootRouteChildren = {
   DevicesRoute: DevicesRoute,
   FieldsRoute: FieldsRoute,
   IntegrationsRoute: IntegrationsRoute,
+  OnboardingRoute: OnboardingRoute,
   SensorsRoute: SensorsRoute,
   ThresholdsRoute: ThresholdsRoute,
+  AuthSignInRoute: AuthSignInRoute,
+  AuthSignUpRoute: AuthSignUpRoute,
   ApiIntegrationsIngestRoute: ApiIntegrationsIngestRoute,
 }
 export const routeTree = rootRouteImport

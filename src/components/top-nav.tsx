@@ -1,7 +1,8 @@
-import { ChevronDown, Search, Bell, Sun, Moon } from "lucide-react";
+import { ChevronDown, Search, Bell, Sun, Moon, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MurimiAiToolbarButton } from "@/components/murimi-ai-sheet";
+import { useAuth } from "@/context/auth-context";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -10,6 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export function TopNav() {
+  const { user, signOut } = useAuth();
   const [farm, setFarm] = useState("University of Zimbabwe Agroecology Farm");
   const [dark, setDark] = useState(false);
 
@@ -52,9 +54,33 @@ export function TopNav() {
           <Bell className="h-4 w-4" />
           <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-destructive">3</Badge>
         </Button>
-        <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-semibold">TM</AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" aria-label="Account menu">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-semibold">
+                  {(user?.email ?? "U")
+                    .split("@")[0]
+                    .slice(0, 2)
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">{user?.email}</div>
+            <DropdownMenuItem
+              onClick={() => {
+                void signOut();
+                window.location.href = "/auth/sign-in";
+              }}
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

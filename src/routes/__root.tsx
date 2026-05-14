@@ -6,14 +6,13 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { TopNav } from "@/components/top-nav";
+import { AuthProvider } from "@/context/auth-context";
+import { ProtectedAppShell } from "@/components/protected-app-shell";
 import { Toaster } from "@/components/ui/sonner";
-import { FarmDataProvider } from "@/context/farm-data-context";
 
 function NotFoundComponent() {
   return (
@@ -116,23 +115,34 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  if (pathname.startsWith("/api")) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+      </QueryClientProvider>
+    );
+  }
+
+  if (pathname.startsWith("/auth")) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+            <Outlet />
+          </div>
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <FarmDataProvider>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-background">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <TopNav />
-              <main className="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
-                <Outlet />
-              </main>
-            </div>
-          </div>
-          <Toaster richColors position="top-right" />
-        </SidebarProvider>
-      </FarmDataProvider>
+      <AuthProvider>
+        <ProtectedAppShell />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
