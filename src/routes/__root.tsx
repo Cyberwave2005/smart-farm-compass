@@ -13,6 +13,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
 import { Toaster } from "@/components/ui/sonner";
+import { FarmDataProvider } from "@/context/farm-data-context";
 
 function NotFoundComponent() {
   return (
@@ -118,18 +119,20 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col min-w-0">
-            <TopNav />
-            <main className="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
-              <Outlet />
-            </main>
+      <FarmDataProvider>
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full bg-background">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col min-w-0">
+              <TopNav />
+              <main className="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
+                <Outlet />
+              </main>
+            </div>
           </div>
-        </div>
-        <Toaster richColors position="top-right" />
-      </SidebarProvider>
+          <Toaster richColors position="top-right" />
+        </SidebarProvider>
+      </FarmDataProvider>
     </QueryClientProvider>
   );
 }

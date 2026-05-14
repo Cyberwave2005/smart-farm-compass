@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FieldCard } from "@/components/dashboard/field-card";
-import { FIELDS } from "@/lib/farm-data";
+import { useFarmData } from "@/context/farm-data-context";
 
 export const Route = createFileRoute("/fields")({
   component: FieldsPage,
@@ -8,6 +8,7 @@ export const Route = createFileRoute("/fields")({
 });
 
 function FieldsPage() {
+  const { fields } = useFarmData();
   return (
     <div className="space-y-6">
       <div>
@@ -15,7 +16,7 @@ function FieldsPage() {
         <p className="text-muted-foreground">All monitored fields across your farms</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {FIELDS.map((f) => <FieldCard key={f.id} field={f} />)}
+        {fields.map((f) => <FieldCard key={f.id} field={f} />)}
       </div>
     </div>
   );

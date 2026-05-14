@@ -8,7 +8,7 @@ import { LiveChart, RainfallChart } from "@/components/dashboard/live-chart";
 import { AIRecommendations } from "@/components/dashboard/ai-recommendations";
 import { AlertsList } from "@/components/dashboard/alerts-list";
 import { DeviceHealth, WebhookLog } from "@/components/dashboard/device-health";
-import { FIELDS } from "@/lib/farm-data";
+import { useFarmData } from "@/context/farm-data-context";
 import { Button } from "@/components/ui/button";
 import { AlertOctagon, X } from "lucide-react";
 import { useState } from "react";
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const { fields } = useFarmData();
   const [bannerOpen, setBannerOpen] = useState(true);
 
   return (
@@ -82,7 +83,7 @@ function Dashboard() {
               <Button variant="ghost" size="sm">View all →</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {FIELDS.slice(0, 4).map((f) => (
+              {fields.slice(0, 4).map((f) => (
                 <FieldCard key={f.id} field={f} />
               ))}
             </div>

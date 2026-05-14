@@ -2,8 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Info, AlertOctagon, Check } from "lucide-react";
-import { ALERTS, type Alert } from "@/lib/farm-data";
-import { useState } from "react";
+import { useFarmData } from "@/context/farm-data-context";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const cfg = {
@@ -13,7 +13,14 @@ const cfg = {
 };
 
 export function AlertsList({ limit }: { limit?: number }) {
-  const [alerts, setAlerts] = useState<Alert[]>(ALERTS);
+  const { alerts: alertsFromCtx } = useFarmData();
+  const [resolvedLocal, setResolvedLocal] = useState<Record<string, boolean>>({});
+
+  const alerts = useMemo(
+    () => alertsFromCtx.map((a) => ({ ...a, resolved: a.resolved || Boolean(resolvedLocal[a.id]) })),
+    [alertsFromCtx, resolvedLocal],
+  );
+
   const visible = limit ? alerts.slice(0, limit) : alerts;
 
   return (
@@ -54,7 +61,7 @@ export function AlertsList({ limit }: { limit?: number }) {
                 <Button
                   size="sm" variant="ghost"
                   className="h-7 text-xs"
-                  onClick={() => setAlerts((p) => p.map((x) => x.id === a.id ? { ...x, resolved: true } : x))}
+                  onClick={() => setResolvedLocal((p) => ({ ...p, [a.id]: true }))}
                 >
                   <Check className="h-3 w-3" />
                 </Button>

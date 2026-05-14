@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFarmData } from "@/context/farm-data-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { FIELDS } from "@/lib/farm-data";
 import { toast } from "sonner";
 import { History, RotateCcw, Save, Sparkles } from "lucide-react";
 
@@ -21,7 +21,8 @@ export const Route = createFileRoute("/thresholds")({
 const DEFAULTS = { moisture: [25, 55] as [number, number], temp: [18, 30] as [number, number], humidity: [40, 75] as [number, number], ph: [6.0, 7.2] as [number, number] };
 
 function ThresholdsPage() {
-  const [field, setField] = useState(FIELDS[0].id);
+  const { fields } = useFarmData();
+  const [field, setField] = useState(fields[0]?.id ?? "f1");
   const [stage, setStage] = useState("Vegetative");
   const [moisture, setMoisture] = useState<number[]>(DEFAULTS.moisture);
   const [temp, setTemp] = useState<number[]>(DEFAULTS.temp);
@@ -29,6 +30,13 @@ function ThresholdsPage() {
   const [ph, setPh] = useState<number[]>([60, 72]); // 6.0-7.2 *10
   const [autoAdjust, setAutoAdjust] = useState(true);
   const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (!fields.length) return;
+    if (!fields.some((f) => f.id === field)) {
+      setField(fields[0].id);
+    }
+  }, [fields, field]);
 
   const onChange = (setter: (v: number[]) => void) => (v: number[]) => { setter(v); setDirty(true); };
 
@@ -43,7 +51,7 @@ function ThresholdsPage() {
     toast.success("Threshold profile saved", { description: "Version added to history · audit logged" });
   };
 
-  const selected = FIELDS.find((f) => f.id === field)!;
+  const selected = fields.find((f) => f.id === field) ?? fields[0]!;
 
   return (
     <div className="space-y-6">
@@ -75,7 +83,7 @@ function ThresholdsPage() {
               <Select value={field} onValueChange={(v) => { setField(v); setDirty(true); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {FIELDS.map((f) => <SelectItem key={f.id} value={f.id}>{f.name} · {f.crop}</SelectItem>)}
+                  {fields.map((f) => <SelectItem key={f.id} value={f.id}>{f.name} · {f.crop}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

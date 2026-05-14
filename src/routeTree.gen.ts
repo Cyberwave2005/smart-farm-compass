@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThresholdsRouteImport } from './routes/thresholds'
 import { Route as SensorsRouteImport } from './routes/sensors'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as FieldsRouteImport } from './routes/fields'
 import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiIntegrationsIngestRouteImport } from './routes/api/integrations/ingest'
 
 const ThresholdsRoute = ThresholdsRouteImport.update({
   id: '/thresholds',
@@ -25,6 +27,11 @@ const ThresholdsRoute = ThresholdsRouteImport.update({
 const SensorsRoute = SensorsRouteImport.update({
   id: '/sensors',
   path: '/sensors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FieldsRoute = FieldsRouteImport.update({
@@ -52,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiIntegrationsIngestRoute = ApiIntegrationsIngestRouteImport.update({
+  id: '/api/integrations/ingest',
+  path: '/api/integrations/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,8 +71,10 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
+  '/integrations': typeof IntegrationsRoute
   '/sensors': typeof SensorsRoute
   '/thresholds': typeof ThresholdsRoute
+  '/api/integrations/ingest': typeof ApiIntegrationsIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,8 +82,10 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
+  '/integrations': typeof IntegrationsRoute
   '/sensors': typeof SensorsRoute
   '/thresholds': typeof ThresholdsRoute
+  '/api/integrations/ingest': typeof ApiIntegrationsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +94,10 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
+  '/integrations': typeof IntegrationsRoute
   '/sensors': typeof SensorsRoute
   '/thresholds': typeof ThresholdsRoute
+  '/api/integrations/ingest': typeof ApiIntegrationsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -89,8 +107,10 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/devices'
     | '/fields'
+    | '/integrations'
     | '/sensors'
     | '/thresholds'
+    | '/api/integrations/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -98,8 +118,10 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/devices'
     | '/fields'
+    | '/integrations'
     | '/sensors'
     | '/thresholds'
+    | '/api/integrations/ingest'
   id:
     | '__root__'
     | '/'
@@ -107,8 +129,10 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/devices'
     | '/fields'
+    | '/integrations'
     | '/sensors'
     | '/thresholds'
+    | '/api/integrations/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,8 +141,10 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   DevicesRoute: typeof DevicesRoute
   FieldsRoute: typeof FieldsRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   SensorsRoute: typeof SensorsRoute
   ThresholdsRoute: typeof ThresholdsRoute
+  ApiIntegrationsIngestRoute: typeof ApiIntegrationsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -135,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/sensors'
       fullPath: '/sensors'
       preLoaderRoute: typeof SensorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fields': {
@@ -172,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/integrations/ingest': {
+      id: '/api/integrations/ingest'
+      path: '/api/integrations/ingest'
+      fullPath: '/api/integrations/ingest'
+      preLoaderRoute: typeof ApiIntegrationsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -181,8 +221,10 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   DevicesRoute: DevicesRoute,
   FieldsRoute: FieldsRoute,
+  IntegrationsRoute: IntegrationsRoute,
   SensorsRoute: SensorsRoute,
   ThresholdsRoute: ThresholdsRoute,
+  ApiIntegrationsIngestRoute: ApiIntegrationsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

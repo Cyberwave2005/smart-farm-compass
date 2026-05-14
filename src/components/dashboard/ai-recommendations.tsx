@@ -2,7 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Droplets, Beaker, ShieldAlert, CloudSun, Check, X } from "lucide-react";
-import { RECOMMENDATIONS, type Recommendation } from "@/lib/farm-data";
+import { useFarmData } from "@/context/farm-data-context";
+import type { Recommendation } from "@/lib/farm-data";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -22,17 +23,19 @@ const toneMap = {
 };
 
 export function AIRecommendations() {
-  const [recs, setRecs] = useState(RECOMMENDATIONS);
+  const { recommendations: recsFromCtx } = useFarmData();
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const recs = recsFromCtx.filter((r) => !dismissed.has(r.id));
   const [confirming, setConfirming] = useState<Recommendation | null>(null);
 
   const accept = (r: Recommendation) => setConfirming(r);
   const reject = (id: string) => {
-    setRecs((p) => p.filter((r) => r.id !== id));
+    setDismissed((p) => new Set(p).add(id));
     toast.info("Recommendation dismissed");
   };
   const confirm = () => {
     if (!confirming) return;
-    setRecs((p) => p.filter((r) => r.id !== confirming.id));
+    setDismissed((p) => new Set(p).add(confirming.id));
     toast.success(`Action queued: ${confirming.title}`, {
       description: `${confirming.field} · logged to audit trail`,
     });

@@ -1,6 +1,7 @@
 import { ChevronDown, Search, Bell, Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MurimiAiToolbarButton } from "@/components/murimi-ai-sheet";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -35,12 +36,15 @@ export function TopNav() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground ml-2">
-        <Search className="h-4 w-4" />
-        <span>Search fields, sensors, alerts…</span>
+      <div className="flex-1 min-w-0 md:hidden" aria-hidden />
+
+      <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground ml-2 min-w-0 flex-1">
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="truncate">Search fields, sensors, alerts…</span>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2 shrink-0">
+        <MurimiAiToolbarButton />
         <Button variant="ghost" size="icon" onClick={() => setDark((d) => !d)} aria-label="Toggle theme">
           {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
