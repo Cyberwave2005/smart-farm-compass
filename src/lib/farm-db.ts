@@ -11,7 +11,7 @@ import type {
   WebhookEvent,
   WorkspaceActuator,
 } from "@/lib/farm-data";
-import { EMPTY_FARM_SNAPSHOT, getStaticFarmSnapshot } from "@/lib/farm-data";
+import { enrichSnapshotWithDemoData, getStaticFarmSnapshot } from "@/lib/farm-data";
 import { parsePlotThresholdProfile } from "@/lib/plot-thresholds";
 import { createSupabaseServerClient, createSupabaseServerClientWithUserJwt } from "@/lib/supabase-server";
 
@@ -274,9 +274,9 @@ export async function fetchGlobalFarmSnapshot(client: SupabaseClient): Promise<F
   };
 }
 
-/** Logged-in user workspace (`farms`, `farm_plots`, `farm_nodes`, `user_actuators`). */
+/** Logged-in user workspace (`farms`, `farm_plots`, `farm_nodes`, `user_actuators`, `user_alerts`). */
 export async function fetchUserWorkspaceSnapshot(client: SupabaseClient): Promise<FarmSnapshot | null> {
-  const [farmsRes, plotsRes, nodesRes, actRes] = await Promise.all([
+  const [farmsRes, plotsRes, nodesRes, actRes, alertsRes] = await Promise.all([
     client.from("farms").select("id,name,sort_order,weather_lat,weather_lon,weather_label").order("sort_order", { ascending: true }),
     client
       .from("farm_plots")
@@ -290,6 +290,10 @@ export async function fetchUserWorkspaceSnapshot(client: SupabaseClient): Promis
       .from("user_actuators")
       .select("id,name,actuator_type,field_or_location,notes,farm_id,farms(name)")
       .order("sort_order", { ascending: true }),
+    client
+      .from("user_alerts")
+      .select("id,level,title,field_label,time_label,resolved")
+      .order("sort_order", { ascending: true }),
   ]);
 
   const firstErr = farmsRes.error ?? plotsRes.error ?? nodesRes.error ?? actRes.error;
@@ -300,6 +304,18 @@ export async function fetchUserWorkspaceSnapshot(client: SupabaseClient): Promis
     }
     console.error("Supabase user workspace snapshot error", firstErr);
     return null;
+  }
+
+  let alerts: Alert[] = [];
+  if (alertsRes.error) {
+    if (alertsRes.error.code === "42P01" || alertsRes.error.message?.includes("does not exist")) {
+      console.warn("user_alerts table missing; apply migration 20260515215000_user_alerts.sql.");
+    } else {
+      console.error("Supabase user_alerts error", alertsRes.error);
+      return null;
+    }
+  } else {
+    alerts = (alertsRes.data as AlertRow[] | null)?.map(mapAlert) ?? [];
   }
 
   const farms = (farmsRes.data as FarmRow[] | null)?.map(mapFarm) ?? [];
@@ -316,7 +332,7 @@ export async function fetchUserWorkspaceSnapshot(client: SupabaseClient): Promis
     nodes,
     actuators,
     fields,
-    alerts: [],
+    alerts,
     recommendations: [],
     devices: [],
     webhookEvents: [],
@@ -326,15 +342,15 @@ export async function fetchUserWorkspaceSnapshot(client: SupabaseClient): Promis
 export async function loadFarmSnapshotForUser(accessToken: string): Promise<FarmSnapshot> {
   const client = createSupabaseServerClientWithUserJwt(accessToken);
   if (!client) {
-    return { ...EMPTY_FARM_SNAPSHOT, source: "workspace" };
+    return getStaticFarmSnapshot();
   }
   try {
     const snap = await fetchUserWorkspaceSnapshot(client);
-    if (snap) return snap;
+    if (snap) return enrichSnapshotWithDemoData(snap);
   } catch (e) {
     console.error(e);
   }
-  return { ...EMPTY_FARM_SNAPSHOT, source: "workspace" };
+  return getStaticFarmSnapshot();
 }
 
 /** Used when no user JWT is available (should be rare in this app). */

@@ -10,10 +10,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function TopNav() {
   const { user, signOut } = useAuth();
@@ -75,14 +78,59 @@ export function TopNav() {
         <Button variant="ghost" size="icon" onClick={() => setDark((d) => !d)} aria-label="Toggle theme">
           {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          <Bell className="h-4 w-4" />
-          {openAlerts > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-4 min-w-4 p-0 flex items-center justify-center text-[10px] bg-destructive px-0.5">
-              {openAlerts > 9 ? "9+" : openAlerts}
-            </Badge>
-          )}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+              <Bell className="h-4 w-4" />
+              {openAlerts > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-4 min-w-4 p-0 flex items-center justify-center text-[10px] bg-destructive px-0.5">
+                  {openAlerts > 9 ? "9+" : openAlerts}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {alerts.length === 0 ? (
+              <div className="px-2 py-3 text-sm text-muted-foreground">You are all caught up.</div>
+            ) : (
+              alerts.slice(0, 12).map((a) => (
+                <DropdownMenuItem
+                  key={a.id}
+                  className="flex cursor-default flex-col items-start gap-0.5 py-2 focus:bg-accent"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <div className="flex w-full items-start gap-2">
+                    <span
+                      className={cn(
+                        "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                        a.level === "critical" && "bg-destructive",
+                        a.level === "warning" && "bg-amber-500",
+                        a.level === "info" && "bg-muted-foreground/60",
+                      )}
+                      aria-hidden
+                    />
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p
+                        className={cn(
+                          "text-sm font-medium leading-tight",
+                          a.resolved && "text-muted-foreground line-through decoration-muted-foreground/60",
+                        )}
+                      >
+                        {a.title}
+                      </p>
+                      {a.field ? (
+                        <p className="text-xs text-muted-foreground truncate">{a.field}</p>
+                      ) : null}
+                      <p className="text-xs text-muted-foreground">{a.time}</p>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" aria-label="Account menu">

@@ -201,8 +201,99 @@ export const FALLBACK_WEBHOOK_EVENTS: WebhookEvent[] = [
   { id: "w11", source: "sensor.temp", status: "success", ts: "34s ago", latency: 224 },
 ];
 
-export function getStaticFarmSnapshot(): FarmSnapshot {
+export const FALLBACK_FARMS: FarmSummary[] = [
+  {
+    id: "demo-f1",
+    name: "Borrowdale Orchards",
+    weather_lat: -17.7412,
+    weather_lon: 31.0618,
+    weather_label: "Borrowdale, Harare, Zimbabwe",
+  },
+  {
+    id: "demo-f2",
+    name: "Ruwa Packhouse & Fields",
+    weather_lat: -17.8897,
+    weather_lon: 31.1489,
+    weather_label: "Ruwa, Mashonaland East, Zimbabwe",
+  },
+];
+
+export const FALLBACK_NODES: FarmNode[] = [
+  {
+    id: "demo-n1",
+    farmId: "demo-f1",
+    farmName: "Borrowdale Orchards",
+    name: "Borrowdale shed gateway",
+    role: "gateway",
+    connectivityNotes: "Econet LTE primary · failover to farm Wi-Fi",
+    farmerEmail: "tinashe.moyo@gmail.com",
+    zapierWebhookUrl: null,
+  },
+  {
+    id: "demo-n2",
+    farmId: "demo-f1",
+    farmName: "Borrowdale Orchards",
+    name: "Block B LoRa soil mesh",
+    role: "sensor_hub",
+    connectivityNotes: "12× capacitance probes along drip line",
+    farmerEmail: null,
+    zapierWebhookUrl: null,
+  },
+  {
+    id: "demo-n3",
+    farmId: "demo-f2",
+    farmName: "Ruwa Packhouse & Fields",
+    name: "Packhouse climate PLC",
+    role: "controller",
+    connectivityNotes: "Temp/humidity for pack line 2",
+    farmerEmail: "rudo.chikwava@gmail.com",
+    zapierWebhookUrl: null,
+  },
+];
+
+export const FALLBACK_ACTUATORS: WorkspaceActuator[] = [
+  {
+    id: "demo-a1",
+    name: "North pivot master valve",
+    actuator_type: "valve",
+    field_or_location: "Borrowdale pivot P1",
+    notes: '2" solenoid · last service Feb 2026',
+    farm_id: "demo-f1",
+    farm_name: "Borrowdale Orchards",
+  },
+  {
+    id: "demo-a2",
+    name: "Borehole lift pump",
+    actuator_type: "pump",
+    field_or_location: "Ruwa borehole BH-2",
+    notes: "5.5 kW · float-linked to tank T3",
+    farm_id: "demo-f2",
+    farm_name: "Ruwa Packhouse & Fields",
+  },
+];
+
+/** Fills empty workspace slices with demo data so dashboards never show bare zeros. */
+export function enrichSnapshotWithDemoData(snapshot: FarmSnapshot): FarmSnapshot {
   return {
+    ...snapshot,
+    farms: snapshot.farms.length > 0 ? snapshot.farms : FALLBACK_FARMS,
+    nodes: snapshot.nodes.length > 0 ? snapshot.nodes : FALLBACK_NODES,
+    actuators: snapshot.actuators.length > 0 ? snapshot.actuators : FALLBACK_ACTUATORS,
+    fields: snapshot.fields.length > 0 ? snapshot.fields : FALLBACK_FIELDS,
+    alerts: snapshot.alerts.length > 0 ? snapshot.alerts : FALLBACK_ALERTS,
+    recommendations: snapshot.recommendations.length > 0 ? snapshot.recommendations : FALLBACK_RECOMMENDATIONS,
+    devices: snapshot.devices.length > 0 ? snapshot.devices : FALLBACK_DEVICES,
+    webhookEvents: snapshot.webhookEvents.length > 0 ? snapshot.webhookEvents : FALLBACK_WEBHOOK_EVENTS,
+  };
+}
+
+export const DEMO_FARM_SNAPSHOT: FarmSnapshot = enrichSnapshotWithDemoData({
+  ...EMPTY_FARM_SNAPSHOT,
+  source: "workspace",
+});
+
+export function getStaticFarmSnapshot(): FarmSnapshot {
+  return enrichSnapshotWithDemoData({
     source: "fallback",
     farms: [],
     nodes: [],
@@ -212,7 +303,7 @@ export function getStaticFarmSnapshot(): FarmSnapshot {
     recommendations: FALLBACK_RECOMMENDATIONS,
     devices: FALLBACK_DEVICES,
     webhookEvents: FALLBACK_WEBHOOK_EVENTS,
-  };
+  });
 }
 
 // Generate timeseries (still computed client-side for charts)

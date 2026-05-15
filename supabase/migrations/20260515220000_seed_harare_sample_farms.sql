@@ -143,6 +143,56 @@ begin
         0,
         'rudo.chikwava@gmail.com',
         null
+      ),
+      (
+        f1,
+        r.user_id,
+        'Helensvale ridge weather kit',
+        'sensor_hub',
+        'Davis Vantage Pro2 · GSM failover to Borrowdale gateway',
+        2,
+        null,
+        null
+      ),
+      (
+        f2,
+        r.user_id,
+        'Cold store RTU logger',
+        'edge',
+        'LoRaWAN to packhouse PLC · battery + solar trickle',
+        1,
+        null,
+        null
+      );
+
+    insert into public.user_alerts (user_id, level, title, field_label, time_label, resolved, sort_order)
+    values
+      (
+        r.user_id,
+        'warning',
+        'Soil moisture edging low on pivot',
+        'Borrowdale · North centre-pivot',
+        '14 min ago',
+        false,
+        0
+      ),
+      (
+        r.user_id,
+        'info',
+        'Light rain forecast tonight',
+        'Ruwa Packhouse & Fields',
+        '2 h ago',
+        false,
+        1
+      ),
+      (
+        r.user_id,
+        'info',
+        'Cold store RTU joined mesh',
+        'Ruwa · IoT',
+        'Just now',
+        true,
+        2
       );
 
     insert into public.user_actuators (user_id, farm_id, name, actuator_type, field_or_location, notes, sort_order)

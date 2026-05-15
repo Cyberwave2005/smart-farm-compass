@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/context/auth-context";
 import { getFarmSnapshot } from "@/lib/farm-data-fns";
 import type { FarmSnapshot } from "@/lib/farm-data";
-import { EMPTY_FARM_SNAPSHOT } from "@/lib/farm-data";
+import { DEMO_FARM_SNAPSHOT } from "@/lib/farm-data";
 
 type FarmDataContextValue = {
   snapshot: FarmSnapshot;
@@ -33,10 +33,10 @@ export function FarmDataProvider({ children }: { children: ReactNode }) {
     queryFn: () => load({ data: { accessToken: token } }) as Promise<FarmSnapshot>,
     enabled: Boolean(token),
     staleTime: 60 * 1000,
-    placeholderData: EMPTY_FARM_SNAPSHOT,
+    placeholderData: DEMO_FARM_SNAPSHOT,
   });
 
-  const snapshot = q.data ?? EMPTY_FARM_SNAPSHOT;
+  const snapshot = q.data ?? DEMO_FARM_SNAPSHOT;
 
   const value = useMemo<FarmDataContextValue>(
     () => ({
