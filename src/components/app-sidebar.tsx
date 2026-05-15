@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Sprout, Activity, Bell, BarChart3, SlidersHorizontal,
-  Cpu, Settings, Leaf, Link2,
+  Cpu, Settings, Leaf, Tractor,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -17,7 +17,7 @@ const items = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Thresholds", url: "/thresholds", icon: SlidersHorizontal },
   { title: "Devices", url: "/devices", icon: Cpu },
-  { title: "Integrations", url: "/integrations", icon: Link2 },
+  { title: "Manage my farm", url: "/manage-farm", icon: Tractor },
 ];
 
 export function AppSidebar() {

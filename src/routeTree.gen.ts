@@ -13,7 +13,7 @@ import { Route as ThresholdsRouteImport } from './routes/thresholds'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SensorsRouteImport } from './routes/sensors'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as ManageFarmRouteImport } from './routes/manage-farm'
 import { Route as FieldsRouteImport } from './routes/fields'
 import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -43,9 +43,9 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IntegrationsRoute = IntegrationsRouteImport.update({
-  id: '/integrations',
-  path: '/integrations',
+const ManageFarmRoute = ManageFarmRouteImport.update({
+  id: '/manage-farm',
+  path: '/manage-farm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FieldsRoute = FieldsRouteImport.update({
@@ -95,7 +95,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
-  '/integrations': typeof IntegrationsRoute
+  '/manage-farm': typeof ManageFarmRoute
   '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
   '/settings': typeof SettingsRoute
@@ -110,7 +110,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
-  '/integrations': typeof IntegrationsRoute
+  '/manage-farm': typeof ManageFarmRoute
   '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
   '/settings': typeof SettingsRoute
@@ -126,7 +126,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/devices': typeof DevicesRoute
   '/fields': typeof FieldsRoute
-  '/integrations': typeof IntegrationsRoute
+  '/manage-farm': typeof ManageFarmRoute
   '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
   '/settings': typeof SettingsRoute
@@ -143,7 +143,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/devices'
     | '/fields'
-    | '/integrations'
+    | '/manage-farm'
     | '/onboarding'
     | '/sensors'
     | '/settings'
@@ -158,7 +158,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/devices'
     | '/fields'
-    | '/integrations'
+    | '/manage-farm'
     | '/onboarding'
     | '/sensors'
     | '/settings'
@@ -173,7 +173,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/devices'
     | '/fields'
-    | '/integrations'
+    | '/manage-farm'
     | '/onboarding'
     | '/sensors'
     | '/settings'
@@ -189,7 +189,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   DevicesRoute: typeof DevicesRoute
   FieldsRoute: typeof FieldsRoute
-  IntegrationsRoute: typeof IntegrationsRoute
+  ManageFarmRoute: typeof ManageFarmRoute
   OnboardingRoute: typeof OnboardingRoute
   SensorsRoute: typeof SensorsRoute
   SettingsRoute: typeof SettingsRoute
@@ -229,11 +229,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/integrations': {
-      id: '/integrations'
-      path: '/integrations'
-      fullPath: '/integrations'
-      preLoaderRoute: typeof IntegrationsRouteImport
+    '/manage-farm': {
+      id: '/manage-farm'
+      path: '/manage-farm'
+      fullPath: '/manage-farm'
+      preLoaderRoute: typeof ManageFarmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fields': {
@@ -301,7 +301,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   DevicesRoute: DevicesRoute,
   FieldsRoute: FieldsRoute,
-  IntegrationsRoute: IntegrationsRoute,
+  ManageFarmRoute: ManageFarmRoute,
   OnboardingRoute: OnboardingRoute,
   SensorsRoute: SensorsRoute,
   SettingsRoute: SettingsRoute,
