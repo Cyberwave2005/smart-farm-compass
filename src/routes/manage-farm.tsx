@@ -19,7 +19,9 @@ function ManageFarmPage() {
         farms
           .map((f) => `${f.id}:${f.name}:${f.weather_lat ?? ""}:${f.weather_lon ?? ""}:${f.weather_label ?? ""}`)
           .join(";"),
-        nodes.map((n) => `${n.id}:${n.farmId}:${n.name}:${n.role}:${n.connectivityNotes ?? ""}`).join("|"),
+        nodes.map((n) =>
+          `${n.id}:${n.farmId}:${n.name}:${n.role}:${n.connectivityNotes ?? ""}:${n.farmerEmail ?? ""}:${n.zapierWebhookUrl ?? ""}`,
+        ).join("|"),
         actuators.map((a) => `${a.id}:${a.farm_id ?? ""}:${a.name}:${a.actuator_type}`).join("|"),
       ].join("::"),
     [farms, nodes, actuators],

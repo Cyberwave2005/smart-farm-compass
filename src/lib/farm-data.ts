@@ -2,6 +2,15 @@
 // via `getFarmSnapshot` with a Supabase JWT — empty arrays when you have not added data yet.
 // Static fallback blocks remain for local tooling / demos only (not used in the protected app shell).
 
+export type PlotThresholdProfile = {
+  moisture: [number, number];
+  temp: [number, number];
+  humidity: [number, number];
+  ph: [number, number];
+  growthStage: string;
+  autoAdjust: boolean;
+};
+
 export type Field = {
   id: string;
   farmId?: string;
@@ -16,6 +25,8 @@ export type Field = {
   humidity: number;
   ph: number;
   status: "healthy" | "warning" | "critical";
+  /** Parsed from `farm_plots.threshold_profile` when present. */
+  thresholdProfile?: PlotThresholdProfile | null;
 };
 
 export type FarmSummary = {
@@ -33,6 +44,8 @@ export type FarmNode = {
   name: string;
   role: "gateway" | "sensor_hub" | "controller" | "edge" | "other";
   connectivityNotes: string | null;
+  farmerEmail: string | null;
+  zapierWebhookUrl: string | null;
 };
 
 export type WorkspaceActuator = {

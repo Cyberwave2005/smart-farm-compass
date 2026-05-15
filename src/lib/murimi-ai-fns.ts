@@ -95,7 +95,7 @@ What crop is this, and what have you noticed in the last few days?`;
     return `Nutrient decisions work best with soil or leaf tests, but general rules still help: yellow older leaves often point to **nitrogen** shortage; purple or stunted roots can hint at **phosphorus**; marginal burn on older leaves can be **potassium**. Always follow local recommendations and product labels. What crop and growth stage are you feeding?`;
   }
   if (/sensor|probe|threshold|alert|arduino|webhook/.test(last)) {
-    return `Sensors are most useful when thresholds match crop stage—Verdant can help you think through moisture floors and heat stress. If you are wiring hardware, use **Manage my farm** for your workspace and point webhooks at \`/api/integrations/ingest\` so readings land in one place. What channel is misbehaving—moisture, temperature, or connectivity?`;
+    return `Sensors are most useful when thresholds match crop stage—Verdant can help you think through moisture floors and heat stress. Configure **Thresholds** (plot ranges) and **Zapier webhooks per node**, then use **Send to Zapier** on AI cards. Telemetry can still POST to \`/api/integrations/ingest\`. What channel is misbehaving—moisture, temperature, or connectivity?`;
   }
 
   return `Thank you for reaching out. Murimi AI works best with a bit of context: which **field or crop**, what you **see or measure**, and what you **want to decide** (irrigate, spray, wait, scout, etc.). Share that and we will work through it step by step.`;

@@ -12,6 +12,7 @@ import type {
   WorkspaceActuator,
 } from "@/lib/farm-data";
 import { EMPTY_FARM_SNAPSHOT, getStaticFarmSnapshot } from "@/lib/farm-data";
+import { parsePlotThresholdProfile } from "@/lib/plot-thresholds";
 import { createSupabaseServerClient, createSupabaseServerClientWithUserJwt } from "@/lib/supabase-server";
 
 export type { FarmSnapshot } from "@/lib/farm-data";
@@ -89,6 +90,7 @@ type PlotRow = {
   humidity: number;
   ph: number;
   status: Field["status"];
+  threshold_profile?: unknown;
   farms: { name: string } | null;
 };
 
@@ -98,6 +100,8 @@ type NodeRow = {
   name: string;
   node_role: FarmNode["role"];
   connectivity_notes: string | null;
+  farmer_email: string | null;
+  zapier_webhook_url: string | null;
   farms: { name: string } | null;
 };
 
@@ -198,6 +202,7 @@ function mapPlot(r: PlotRow): Field {
     humidity: r.humidity,
     ph: Number(r.ph),
     status: r.status,
+    thresholdProfile: parsePlotThresholdProfile(r.threshold_profile),
   };
 }
 
@@ -211,6 +216,8 @@ function mapNode(r: NodeRow): FarmNode | null {
     name: r.name,
     role: r.node_role,
     connectivityNotes: r.connectivity_notes,
+    farmerEmail: r.farmer_email,
+    zapierWebhookUrl: r.zapier_webhook_url,
   };
 }
 
@@ -273,11 +280,11 @@ export async function fetchUserWorkspaceSnapshot(client: SupabaseClient): Promis
     client.from("farms").select("id,name,sort_order,weather_lat,weather_lon,weather_label").order("sort_order", { ascending: true }),
     client
       .from("farm_plots")
-      .select("id,farm_id,name,crop,stage,area_ha,health,moisture,temp,humidity,ph,status,farms(name)")
+      .select("id,farm_id,name,crop,stage,area_ha,health,moisture,temp,humidity,ph,status,threshold_profile,farms(name)")
       .order("sort_order", { ascending: true }),
     client
       .from("farm_nodes")
-      .select("id,farm_id,name,node_role,connectivity_notes,farms(name)")
+      .select("id,farm_id,name,node_role,connectivity_notes,farmer_email,zapier_webhook_url,farms(name)")
       .order("sort_order", { ascending: true }),
     client
       .from("user_actuators")

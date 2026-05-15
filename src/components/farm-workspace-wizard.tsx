@@ -217,6 +217,39 @@ export function FarmWorkspaceWizard({
     if (!supabase || !user) return;
     setSaving(true);
     try {
+      const { data: prevFarmsQ } = await supabase
+        .from("farms")
+        .select("id,sort_order")
+        .eq("user_id", user.id)
+        .order("sort_order", { ascending: true });
+      const oldFarmIdToSort = new Map((prevFarmsQ ?? []).map((f) => [f.id, f.sort_order]));
+
+      const { data: prevPlotsQ } = await supabase
+        .from("farm_plots")
+        .select("farm_id,threshold_profile,sort_order")
+        .eq("user_id", user.id);
+      const thresholdByFarmSort = new Map<number, unknown>();
+      for (const p of prevPlotsQ ?? []) {
+        const so = oldFarmIdToSort.get(p.farm_id);
+        if (so !== undefined) thresholdByFarmSort.set(so, p.threshold_profile);
+      }
+
+      const { data: prevNodesQ } = await supabase
+        .from("farm_nodes")
+        .select("farm_id,name,node_role,farmer_email,zapier_webhook_url")
+        .eq("user_id", user.id);
+      const nodeContactKey = (farmSort: number, name: string, role: string) =>
+        `${farmSort}|${name.trim()}|${role}`;
+      const contactsByKey = new Map<string, { email: string | null; zap: string | null }>();
+      for (const n of prevNodesQ ?? []) {
+        const so = oldFarmIdToSort.get(n.farm_id);
+        if (so === undefined) continue;
+        contactsByKey.set(nodeContactKey(so, n.name, n.node_role), {
+          email: n.farmer_email,
+          zap: n.zapier_webhook_url,
+        });
+      }
+
       const { error: delAct } = await supabase.from("user_actuators").delete().eq("user_id", user.id);
       if (delAct) {
         toast.error(delAct.message);
@@ -243,7 +276,7 @@ export function FarmWorkspaceWizard({
         return;
       }
 
-      const plotRows = insertedFarms.map((row) => ({
+      const plotRows = insertedFarms.map((row, farmSortIdx) => ({
         farm_id: row.id,
         user_id: user.id,
         name: "Main plot",
@@ -257,6 +290,7 @@ export function FarmWorkspaceWizard({
         ph: 7,
         status: "healthy" as const,
         sort_order: 0,
+        threshold_profile: thresholdByFarmSort.get(farmSortIdx) ?? null,
       }));
       const { error: plotErr } = await supabase.from("farm_plots").insert(plotRows);
       if (plotErr) {
@@ -266,14 +300,20 @@ export function FarmWorkspaceWizard({
 
       const validNodes = nodes.filter((n) => n.name.trim() && n.farmIndex >= 0 && n.farmIndex < insertedFarms.length);
       if (validNodes.length) {
-        const nodePayload = validNodes.map((n, i) => ({
-          farm_id: insertedFarms[n.farmIndex]!.id,
-          user_id: user.id,
-          name: n.name.trim(),
-          node_role: n.role,
-          connectivity_notes: n.notes.trim() || null,
-          sort_order: i,
-        }));
+        const nodePayload = validNodes.map((n, i) => {
+          const key = nodeContactKey(n.farmIndex, n.name.trim(), n.role);
+          const c = contactsByKey.get(key);
+          return {
+            farm_id: insertedFarms[n.farmIndex]!.id,
+            user_id: user.id,
+            name: n.name.trim(),
+            node_role: n.role,
+            connectivity_notes: n.notes.trim() || null,
+            sort_order: i,
+            farmer_email: c?.email ?? null,
+            zapier_webhook_url: c?.zap ?? null,
+          };
+        });
         const { error: nodeErr } = await supabase.from("farm_nodes").insert(nodePayload);
         if (nodeErr) {
           toast.error(nodeErr.message);

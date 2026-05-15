@@ -1,11 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Droplets, Beaker, ShieldAlert, CloudSun, Check, X } from "lucide-react";
+import { Sparkles, Droplets, Beaker, ShieldAlert, CloudSun, Check, X, Zap } from "lucide-react";
 import { useFarmData } from "@/context/farm-data-context";
-import type { Recommendation } from "@/lib/farm-data";
+import { useAuth } from "@/context/auth-context";
+import type { Field, FarmNode, Recommendation } from "@/lib/farm-data";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
+import { sendZapierAlertsToNodes } from "@/lib/zapier-alert-fns";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -22,9 +25,26 @@ const toneMap = {
   climate: "text-warning-foreground bg-warning/15",
 };
 
+function nodesForRecommendationZapier(r: Recommendation, fields: Field[], nodes: FarmNode[]): FarmNode[] {
+  const withHooks = nodes.filter((n) => (n.zapierWebhookUrl ?? "").trim().length > 0);
+  if (!withHooks.length) return [];
+  const plot =
+    fields.find((f) => f.name === r.field) ??
+    fields.find((f) => r.field.includes(f.name)) ??
+    fields.find((f) => f.name.endsWith(r.field.trim())) ??
+    fields[0];
+  const farmId = plot?.farmId;
+  if (!farmId) return withHooks;
+  const onFarm = withHooks.filter((n) => n.farmId === farmId);
+  return onFarm.length ? onFarm : withHooks;
+}
+
 export function AIRecommendations() {
-  const { recommendations: recsFromCtx } = useFarmData();
+  const { session } = useAuth();
+  const { recommendations: recsFromCtx, fields, nodes } = useFarmData();
+  const postZapier = useServerFn(sendZapierAlertsToNodes);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [zappingId, setZappingId] = useState<string | null>(null);
   const recs = recsFromCtx.filter((r) => !dismissed.has(r.id));
   const [confirming, setConfirming] = useState<Recommendation | null>(null);
 
@@ -41,6 +61,44 @@ export function AIRecommendations() {
     });
     setConfirming(null);
   };
+
+  async function sendZapier(r: Recommendation) {
+    const token = session?.access_token;
+    if (!token) {
+      toast.error("Sign in to send Zapier alerts.");
+      return;
+    }
+    const targets = nodesForRecommendationZapier(r, fields, nodes);
+    if (!targets.length) {
+      toast.message("Add Zapier webhook URLs under Thresholds → Farmers and Zapier (per node).");
+      return;
+    }
+    setZappingId(r.id);
+    try {
+      const res = await postZapier({
+        data: {
+          accessToken: token,
+          nodeIds: targets.map((n) => n.id),
+          title: r.title,
+          body: r.reason,
+          fieldLabel: r.field,
+          crop: r.crop,
+        },
+      });
+      if (!res.ok) {
+        toast.error("Zapier send failed", { description: "error" in res ? res.error : "Unknown error" });
+        return;
+      }
+      const okCount = res.results.filter((x) => x.ok).length;
+      const skipCount = res.results.filter((x) => x.skipped).length;
+      toast.success(`Zapier: ${okCount} delivered${skipCount ? ` · ${skipCount} skipped (no URL)` : ""}`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not reach the server to send Zapier hooks.");
+    } finally {
+      setZappingId(null);
+    }
+  }
 
   return (
     <Card className="p-6">
@@ -77,9 +135,18 @@ export function AIRecommendations() {
                     <span className="font-medium text-foreground">{r.field}</span> · {r.crop}
                   </p>
                   <p className="text-xs leading-relaxed text-muted-foreground mb-3">{r.reason}</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button size="sm" className="h-7 text-xs gap-1" onClick={() => accept(r)}>
                       <Check className="h-3 w-3" /> Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1"
+                      disabled={zappingId === r.id}
+                      onClick={() => void sendZapier(r)}
+                    >
+                      <Zap className="h-3 w-3" /> Send to Zapier
                     </Button>
                     <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => reject(r.id)}>
                       <X className="h-3 w-3" /> Dismiss
@@ -108,7 +175,7 @@ export function AIRecommendations() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirm}>Execute &amp; log</AlertDialogAction>
+            <AlertDialogAction onClick={confirm}>Execute and log</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
