@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { loadFarmSnapshotForUser, loadFarmSnapshotWithFallback } from "@/lib/farm-db";
+import { buildMurimiFarmContext, buildMurimiSystemPrompt } from "@/lib/murimi-farm-context";
+import type { FarmSnapshot } from "@/lib/farm-data";
+
 const chatInputSchema = z.object({
   messages: z
     .array(
@@ -13,6 +17,8 @@ const chatInputSchema = z.object({
   /** Raw base64 without data URL prefix */
   imageBase64: z.string().max(2_800_000).optional(),
   imageMimeType: z.string().max(64).optional(),
+  /** Supabase session JWT — loads fresh workspace data on every message */
+  accessToken: z.string().max(8192).optional(),
 });
 
 function getEnv(name: string): string | undefined {
@@ -50,22 +56,18 @@ function getOpenAIBaseUrl(): string {
   return u.replace(/\/$/, "");
 }
 
-const SYSTEM_PROMPT = `You are Murimi AI ("murimi" = farmer), the friendly farm intelligence copilot for Verdant.
-You help smallholder and commercial farmers with crops, irrigation, soil, pests, diseases, weather interpretation, and sensor data—especially in Southern Africa contexts when relevant.
-
-Tone: warm, respectful, concise, practical. Use plain language. You may occasionally use a short Shona greeting (e.g. "Makadii murimi") when it feels natural, then continue in clear English.
-
-When the user sends a leaf or crop photo:
-- Comment only on what is reasonably visible (colour, spots, holes, curling, powdery growth, uniform yellowing, patterns).
-- Never claim certainty about a diagnosis from a photo alone.
-- Give 2–4 possible explanations as possibilities, not facts, and suggest what a local agronomist or extension officer could confirm.
-- Mention lab testing or field scouting when appropriate.
-
-Always remind users that your advice supports—but does not replace—professional agronomy, local regulations, and label directions for agrochemicals.`;
+async function loadMurimiFarmSnapshot(accessToken?: string): Promise<FarmSnapshot> {
+  const token = accessToken?.trim();
+  if (token) {
+    return loadFarmSnapshotForUser(token);
+  }
+  return loadFarmSnapshotWithFallback();
+}
 
 function demoReply(
   messages: { role: "user" | "assistant"; content: string }[],
   hasImage: boolean,
+  farmContext: string,
 ): string {
   const last = messages.filter((m) => m.role === "user").pop()?.content?.toLowerCase() ?? "";
 
@@ -79,8 +81,12 @@ Until then, here is quick guidance: look for **uniform yellowing** (nutrition or
 What crop is this, and what have you noticed in the last few days?`;
   }
 
+  const contextHint = farmContext.includes("### Alerts")
+    ? "\n\nI can see your current Verdant alerts and plot readings in the workspace — ask me about any warning or field by name."
+    : "";
+
   if (/hello|hi |hey|makadii|mhoro/.test(last)) {
-    return `Makadii murimi! Murimi AI is here to help with your fields—irrigation, crop stages, odd leaves, thresholds, or sensor readings. What is on your mind today?`;
+    return `Makadii murimi! Murimi AI is here to help with your fields—irrigation, crop stages, odd leaves, thresholds, or sensor readings.${contextHint} What is on your mind today?`;
   }
   if (/irrigat|water|moist|dry|rain/.test(last)) {
     return `Water stress often shows up in soil probes before the crop screams. If moisture is trending down and the forecast is dry, consider shorter, more frequent irrigations to refill the root zone without runoff. Match depth to crop stage—shallow roots in early growth, deeper later. Tell me your crop and whether you drip, pivot, or flood, and we can reason through timing.`;
@@ -96,6 +102,10 @@ What crop is this, and what have you noticed in the last few days?`;
   }
   if (/sensor|probe|threshold|alert|arduino|webhook/.test(last)) {
     return `Sensors are most useful when thresholds match crop stage—Verdant can help you think through moisture floors and heat stress. Configure **Thresholds** (plot ranges) and **Zapier webhooks per node**, then use **Send to Zapier** on AI cards. Telemetry can still POST to \`/api/integrations/ingest\`. What channel is misbehaving—moisture, temperature, or connectivity?`;
+  }
+
+  if (farmContext.length > 200) {
+    return `Thank you for reaching out. I have your latest Verdant workspace loaded — plots, alerts, sensors, and recommendations. Tell me which **field or alert** you want to act on (irrigate, scout, dismiss a warning, etc.) and I will reason from your live numbers.${contextHint}`;
   }
 
   return `Thank you for reaching out. Murimi AI works best with a bit of context: which **field or crop**, what you **see or measure**, and what you **want to decide** (irrigate, spray, wait, scout, etc.). Share that and we will work through it step by step.`;
@@ -124,6 +134,7 @@ async function callGemini(
   imageBase64: string | undefined,
   imageMimeType: string | undefined,
   apiKey: string,
+  systemPrompt: string,
 ): Promise<{ reply: string; mode: "gemini" } | { error: string }> {
   const contents = toGeminiContents(messages);
   if (contents.length === 0) {
@@ -153,7 +164,7 @@ async function callGemini(
     },
     body: JSON.stringify({
       systemInstruction: {
-        parts: [{ text: SYSTEM_PROMPT }],
+        parts: [{ text: systemPrompt }],
       },
       contents,
       generationConfig: {
@@ -198,6 +209,7 @@ async function callOpenAI(
   messages: { role: "user" | "assistant"; content: string }[],
   imageBase64: string | undefined,
   imageMimeType: string | undefined,
+  systemPrompt: string,
 ): Promise<{ reply: string; mode: "openai" } | { error: string }> {
   const key = getOpenAIApiKey();
   if (!key) {
@@ -205,7 +217,7 @@ async function callOpenAI(
   }
 
   const apiMessages: { role: "system" | "user" | "assistant"; content: string | OpenAIContentPart[] }[] =
-    [{ role: "system", content: SYSTEM_PROMPT }];
+    [{ role: "system", content: systemPrompt }];
 
   for (const m of messages) {
     apiMessages.push({ role: m.role, content: m.content });
@@ -260,17 +272,18 @@ async function callLLM(
   messages: { role: "user" | "assistant"; content: string }[],
   imageBase64: string | undefined,
   imageMimeType: string | undefined,
+  systemPrompt: string,
 ): Promise<{ reply: string; mode: "gemini" | "openai" } | { error: "missing_key" } | { error: string }> {
   const geminiKey = getGeminiApiKey();
   if (geminiKey) {
-    const g = await callGemini(messages, imageBase64, imageMimeType, geminiKey);
+    const g = await callGemini(messages, imageBase64, imageMimeType, geminiKey, systemPrompt);
     if ("error" in g) {
       return { error: g.error };
     }
     return g;
   }
 
-  const o = await callOpenAI(messages, imageBase64, imageMimeType);
+  const o = await callOpenAI(messages, imageBase64, imageMimeType, systemPrompt);
   if ("error" in o) {
     if (o.error === "missing_key") {
       return { error: "missing_key" };
@@ -283,15 +296,19 @@ async function callLLM(
 export const murimiChat = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => chatInputSchema.parse(d))
   .handler(async ({ data }) => {
-    const { messages, imageBase64, imageMimeType } = data;
+    const { messages, imageBase64, imageMimeType, accessToken } = data;
 
-    const result = await callLLM(messages, imageBase64, imageMimeType);
+    const snapshot = await loadMurimiFarmSnapshot(accessToken);
+    const systemPrompt = buildMurimiSystemPrompt(snapshot);
+    const farmContext = buildMurimiFarmContext(snapshot);
+
+    const result = await callLLM(messages, imageBase64, imageMimeType, systemPrompt);
 
     if ("error" in result) {
       if (result.error === "missing_key") {
         return {
           mode: "demo" as const,
-          reply: demoReply(messages, Boolean(imageBase64)),
+          reply: demoReply(messages, Boolean(imageBase64), farmContext),
         };
       }
       return {

@@ -3,7 +3,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { Camera, ImagePlus, Leaf, Loader2, MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { useAuth } from "@/context/auth-context";
+import { useFarmData } from "@/context/farm-data-context";
 import { murimiChat } from "@/lib/murimi-ai-fns";
+import { buildMurimiWelcomeMessage } from "@/lib/murimi-farm-context";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -20,12 +23,6 @@ import { cn } from "@/lib/utils";
 type Role = "user" | "assistant";
 
 export type ChatMessage = { role: Role; content: string };
-
-const WELCOME: ChatMessage = {
-  role: "assistant",
-  content:
-    "Makadii murimi — welcome to **Murimi AI**. I am here to understand what you need on the farm: water decisions, crop health, strange leaves, thresholds, or sensor data. You can type below or use the **leaf camera** to share a photo for gentle, visible-only guidance (not a lab diagnosis). What would you like to work on first?",
-};
 
 function stripDataUrl(dataUrl: string): { mime: string; base64: string } | null {
   const m = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl);
@@ -58,8 +55,13 @@ type MurimiAiToolbarButtonProps = {
 };
 
 export function MurimiAiToolbarButton({ className }: MurimiAiToolbarButtonProps) {
+  const { session } = useAuth();
+  const { snapshot } = useFarmData();
+  const welcomeMessage = buildMurimiWelcomeMessage(snapshot);
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    { role: "assistant", content: welcomeMessage },
+  ]);
   const [input, setInput] = useState("");
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -69,6 +71,14 @@ export function MurimiAiToolbarButton({ className }: MurimiAiToolbarButtonProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const sendMurimi = useServerFn(murimiChat);
+
+  useEffect(() => {
+    if (!open) return;
+    setMessages((prev) => {
+      if (prev.length !== 1 || prev[0]?.role !== "assistant") return prev;
+      return [{ role: "assistant", content: welcomeMessage }];
+    });
+  }, [open, welcomeMessage]);
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -196,6 +206,7 @@ export function MurimiAiToolbarButton({ className }: MurimiAiToolbarButtonProps)
           messages: apiMessages,
           imageBase64,
           imageMimeType,
+          accessToken: session?.access_token,
         },
       });
       const reply =
@@ -268,7 +279,7 @@ export function MurimiAiToolbarButton({ className }: MurimiAiToolbarButtonProps)
               size="sm"
               className="shrink-0 text-xs h-8"
               onClick={() => {
-                setMessages([WELCOME]);
+                setMessages([{ role: "assistant", content: welcomeMessage }]);
                 setInput("");
                 setPendingImage(null);
                 stopCamera();
@@ -403,10 +414,7 @@ export function MurimiAiToolbarButton({ className }: MurimiAiToolbarButtonProps)
           </div>
           <p className="text-[10px] text-muted-foreground flex items-center gap-1">
             <MessageCircle className="h-3 w-3 shrink-0" />
-            Murimi uses Google Gemini when{" "}
-            <code className="text-[9px] bg-muted px-0.5 rounded">MURIMI_GEMINI_API_KEY</code> or{" "}
-            <code className="text-[9px] bg-muted px-0.5 rounded">GEMINI_API_KEY</code> is set; otherwise
-            OpenAI if configured; else demo mode.
+            Replies use your live dashboard data (plots, alerts, sensors) refreshed on each message.
           </p>
         </div>
       </SheetContent>
