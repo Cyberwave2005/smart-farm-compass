@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, Navigate, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/context/auth-context";
@@ -17,7 +17,8 @@ export function ProtectedAppShell() {
 
   useEffect(() => {
     if (loading || !user || !profile || profile.onboarding_completed) return;
-    if (pathname !== "/onboarding") {
+    const allowedPreApp = pathname === "/onboarding" || pathname === "/settings";
+    if (!allowedPreApp) {
       void navigate({ to: "/onboarding" });
     }
   }, [loading, user, profile, pathname, navigate]);
@@ -77,11 +78,20 @@ export function ProtectedAppShell() {
     );
   }
 
-  if (pathname === "/onboarding") {
+  const preAppShell = pathname === "/onboarding" || (pathname === "/settings" && !profile.onboarding_completed);
+  if (preAppShell) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <header className="border-b bg-background/80 px-4 py-3 flex items-center justify-between">
-          <span className="font-display font-semibold">Verdant onboarding</span>
+        <header className="border-b bg-background/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="font-display font-semibold">Verdant</span>
+          <nav className="flex items-center gap-1 text-sm">
+            <Button variant={pathname === "/onboarding" ? "secondary" : "ghost"} size="sm" asChild>
+              <Link to="/onboarding">Workspace setup</Link>
+            </Button>
+            <Button variant={pathname === "/settings" ? "secondary" : "ghost"} size="sm" asChild>
+              <Link to="/settings">Settings</Link>
+            </Button>
+          </nav>
         </header>
         <main className="flex-1 p-4 md:p-6 max-w-[960px] w-full mx-auto">
           <Outlet />

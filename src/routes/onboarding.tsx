@@ -276,7 +276,7 @@ function OnboardingPage() {
         return;
       }
       await refreshProfile();
-      toast.success("You can add farms and devices later from settings when available.");
+      toast.success("You can add farms and devices later from Settings in the sidebar.");
       await navigate({ to: "/" });
     } finally {
       setSaving(false);

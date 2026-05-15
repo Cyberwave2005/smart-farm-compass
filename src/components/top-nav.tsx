@@ -1,4 +1,5 @@
-import { ChevronDown, Search, Bell, Sun, Moon, LogOut } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ChevronDown, Search, Bell, Sun, Moon, LogOut, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MurimiAiToolbarButton } from "@/components/murimi-ai-sheet";
@@ -97,6 +98,12 @@ export function TopNav() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">{user?.email}</div>
+            <DropdownMenuItem asChild>
+              <Link to="/settings" className="gap-2 cursor-pointer">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 void signOut();

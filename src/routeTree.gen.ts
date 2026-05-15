@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThresholdsRouteImport } from './routes/thresholds'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SensorsRouteImport } from './routes/sensors'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
@@ -25,6 +26,11 @@ import { Route as ApiIntegrationsIngestRouteImport } from './routes/api/integrat
 const ThresholdsRoute = ThresholdsRouteImport.update({
   id: '/thresholds',
   path: '/thresholds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SensorsRoute = SensorsRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof IntegrationsRoute
   '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
+  '/settings': typeof SettingsRoute
   '/thresholds': typeof ThresholdsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsRoute
   '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
+  '/settings': typeof SettingsRoute
   '/thresholds': typeof ThresholdsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/integrations': typeof IntegrationsRoute
   '/onboarding': typeof OnboardingRoute
   '/sensors': typeof SensorsRoute
+  '/settings': typeof SettingsRoute
   '/thresholds': typeof ThresholdsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/onboarding'
     | '/sensors'
+    | '/settings'
     | '/thresholds'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/onboarding'
     | '/sensors'
+    | '/settings'
     | '/thresholds'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/onboarding'
     | '/sensors'
+    | '/settings'
     | '/thresholds'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   IntegrationsRoute: typeof IntegrationsRoute
   OnboardingRoute: typeof OnboardingRoute
   SensorsRoute: typeof SensorsRoute
+  SettingsRoute: typeof SettingsRoute
   ThresholdsRoute: typeof ThresholdsRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/thresholds'
       fullPath: '/thresholds'
       preLoaderRoute: typeof ThresholdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sensors': {
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsRoute: IntegrationsRoute,
   OnboardingRoute: OnboardingRoute,
   SensorsRoute: SensorsRoute,
+  SettingsRoute: SettingsRoute,
   ThresholdsRoute: ThresholdsRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
